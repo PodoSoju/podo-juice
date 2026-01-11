@@ -1,5 +1,4 @@
 import Foundation
-import AppKit
 
 /// Manages Wine process execution with process group tracking
 class WineRunner {
@@ -17,12 +16,7 @@ class WineRunner {
         self.config = config
     }
 
-    /// Wine.app bundle path (LSUIElement=YES for Dock hiding)
-    var wineAppPath: String {
-        return "\(sojuRoot)/Wine.app"
-    }
-
-    /// Wine executable path (fallback if Wine.app doesn't exist)
+    /// Wine executable path (prefers wine, falls back to wine64)
     var winePath: String {
         let wine = "\(sojuRoot)/bin/wine"
         let wine64 = "\(sojuRoot)/bin/wine64"
@@ -31,11 +25,6 @@ class WineRunner {
             return wine
         }
         return wine64
-    }
-
-    /// Check if Wine.app exists
-    var hasWineApp: Bool {
-        return FileManager.default.fileExists(atPath: wineAppPath)
     }
 
     /// Build environment variables for Wine
@@ -50,16 +39,10 @@ class WineRunner {
         env["SOJU_APP_NAME"] = config.appName
         env["SOJU_APP_PATH"] = config.unixExePath
         env["SOJU_WORKSPACE_ID"] = config.workspaceId
-        // SOJU_HIDE_DOCK modes:
-        // 0 = Regular (default)
-        // 1 = Accessory immediate
-        // 2 = Regular->Accessory delayed
-        // 3 = Keep current (for Wine.app with LSUIElement=YES)
-        if hasWineApp {
-            env["SOJU_HIDE_DOCK"] = "3"  // Wine.app + LSUIElement
-        } else {
-            env["SOJU_HIDE_DOCK"] = "2"  // Fallback
-        }
+
+        // SOJU_HIDE_DOCK: Hide Wine from Dock
+        // Mode 2: TransformProcessType before NSApp creation (wine-fork patch)
+        env["SOJU_HIDE_DOCK"] = "2"
 
         // Library paths for bundled dylibs
         let libPath = "\(sojuRoot)/lib"
@@ -82,53 +65,13 @@ class WineRunner {
 
     /// Run Wine with the configured exe
     func run() throws {
-        if hasWineApp {
-            // Use Wine.app with NSWorkspace (LSUIElement=YES for proper Dock hiding)
-            runWithWineApp()
-        } else {
-            // Fallback: direct wine binary execution
-            try runWithWineBinary()
-        }
-    }
-
-    /// Run using Wine.app bundle (recommended - LSUIElement hides from Dock)
-    private func runWithWineApp() {
-        let wineAppURL = URL(fileURLWithPath: wineAppPath)
-        let env = buildEnvironment()
-
-        print("[PodoJuice] Starting Wine.app (LSUIElement):")
-        print("[PodoJuice]   App: \(wineAppPath)")
-        print("[PodoJuice]   Exe: \(config.unixExePath)")
-        print("[PodoJuice]   WINEPREFIX: \(config.winePrefix)")
-        print("[PodoJuice]   App: \(config.appName)")
-
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.arguments = ["start", "/unix", config.unixExePath]
-        configuration.environment = env
-        configuration.activates = false  // Don't activate Wine app
-
-        NSWorkspace.shared.openApplication(at: wineAppURL, configuration: configuration) { app, error in
-            if let error = error {
-                print("[PodoJuice] Failed to start Wine.app: \(error)")
-            } else if let app = app {
-                print("[PodoJuice] Wine.app started (PID: \(app.processIdentifier))")
-            }
-        }
-
-        WineRunner.shared = self
-    }
-
-    /// Fallback: Run wine binary directly
-    private func runWithWineBinary() throws {
         let process = Process()
-        let env = buildEnvironment()
-
         process.executableURL = URL(fileURLWithPath: winePath)
         process.arguments = ["start", "/unix", config.unixExePath]
-        process.environment = env
+        process.environment = buildEnvironment()
         process.currentDirectoryURL = URL(fileURLWithPath: config.workspacePath)
 
-        print("[PodoJuice] Starting Wine (fallback):")
+        print("[PodoJuice] Starting Wine:")
         print("[PodoJuice]   Executable: \(winePath)")
         print("[PodoJuice]   Arguments: \(process.arguments ?? [])")
         print("[PodoJuice]   WINEPREFIX: \(config.winePrefix)")

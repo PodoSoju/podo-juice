@@ -77,8 +77,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         print("[PodoJuice] Terminating...")
-        // Use WineRunner's terminate method
         WineRunner.shared?.terminate()
+    }
+
+    /// Called when user clicks Dock icon - bring Wine window to front
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        print("[PodoJuice] Dock clicked, activating Wine app")
+        activateWineApp()
+        return false
     }
 }
 
@@ -141,56 +147,23 @@ do {
     exit(1)
 }
 
-// 6. Monitor .soju/running/ for Wine window (soju patch creates JSON here)
+// 6. Monitor wineserver for exit detection
 let monitor = WineserverMonitor(winePrefix: config.winePrefix)
-let runningDir = URL(fileURLWithPath: config.winePrefix).appendingPathComponent(".soju/running")
 var loadingClosed = false
-var wineWindowWasOpened = false  // Track if Wine window was ever opened
-var wineWindowStableCount = 0  // Require window to be stable for multiple checks
-var wineWindowGoneCount = 0  // Track consecutive checks where window is gone
-
-print("[PodoJuice] Watching for Wine window in: \(runningDir.path)")
-
-// Track my exe name for pairing
-let myExeName = URL(fileURLWithPath: config.unixExePath).lastPathComponent.lowercased()
+var wineWindowStableCount = 0
 
 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
     Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { timer in
-        // Check if MY running JSON file exists (match by exe path)
-        var hasMyRunningFile = false
-
-        if let files = try? FileManager.default.contentsOfDirectory(atPath: runningDir.path) {
-            for file in files where file.hasSuffix(".json") {
-                let filePath = runningDir.appendingPathComponent(file)
-                if let data = try? Data(contentsOf: filePath),
-                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let exePath = json["exe"] as? String {
-                    // Check if this JSON is for MY exe
-                    let jsonExeName = URL(fileURLWithPath: exePath).lastPathComponent.lowercased()
-                    if jsonExeName == myExeName || exePath.lowercased().contains(myExeName) {
-                        hasMyRunningFile = true
-                        break
-                    }
-                }
-            }
-        }
-
-        if hasMyRunningFile {
-            wineWindowWasOpened = true
-        }
-
-        // Check if actual Wine window is fully visible on screen (always check, not just during loading)
+        // Check if Wine window is visible (for loading window handling)
         let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 
         var foundVisibleWindow = false
         for windowInfo in windowList {
             if let ownerName = windowInfo[kCGWindowOwnerName as String] as? String,
                ownerName.lowercased().contains("wine") {
-                // Check if window has actual size and is fully opaque
                 if let bounds = windowInfo[kCGWindowBounds as String] as? [String: CGFloat],
                    let width = bounds["Width"], let height = bounds["Height"],
                    width > 100 && height > 100 {
-                    // Check alpha (1.0 = fully visible)
                     let alpha = windowInfo[kCGWindowAlpha as String] as? CGFloat ?? 0
                     if alpha >= 1.0 {
                         foundVisibleWindow = true
@@ -204,41 +177,19 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
         if !loadingClosed {
             if foundVisibleWindow {
                 wineWindowStableCount += 1
-                // Require 5 consecutive detections (0.3s * 5 = 1.5s of stable window)
-                if wineWindowStableCount >= 5 {
-                    print("[PodoJuice] Wine window stable for 1.5s, closing loading window")
+                if wineWindowStableCount >= 5 {  // 1.5s stable
+                    print("[PodoJuice] Wine window stable, closing loading window")
                     loadingWindow.close()
                     loadingClosed = true
-
-                    // Activate Wine app to bring window to foreground (with retry)
                     activateWineApp()
                 }
             } else {
-                wineWindowStableCount = 0  // Reset if window disappears
+                wineWindowStableCount = 0
             }
         }
 
-        // Exit conditions:
-        // 1. Wine window was fully visible then disappeared (CGWindowList check)
-        // 2. Running JSON file removed (soju patch signal)
-        // 3. Wineserver exited (fallback)
-        if loadingClosed && !foundVisibleWindow {
-            // Loading closed means window was shown, now check if it's gone
-            wineWindowGoneCount += 1
-            if wineWindowGoneCount >= 3 {  // Gone for 0.9s
-                print("[PodoJuice] Wine window closed, terminating...")
-                timer.invalidate()
-                NSApp.terminate(nil)
-            }
-        } else {
-            wineWindowGoneCount = 0
-        }
-
-        if wineWindowWasOpened && !hasMyRunningFile {
-            print("[PodoJuice] Wine running file removed, terminating...")
-            timer.invalidate()
-            NSApp.terminate(nil)
-        } else if !monitor.isRunning() {
+        // Exit when wineserver terminates (Wine fully closed)
+        if !monitor.isRunning() {
             print("[PodoJuice] Wineserver exited, terminating...")
             timer.invalidate()
             NSApp.terminate(nil)
