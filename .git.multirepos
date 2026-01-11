@@ -1,0 +1,8 @@
+workspaces:
+    - path: app/PodoSojuKit/.build/checkouts/SemanticVersion
+      repo: /Users/max/Work/PodoSoju/app/PodoSojuKit/.build/repositories/SemanticVersion-4d68bae3
+    - path: app/build/SourcePackages/checkouts/SemanticVersion
+      repo: /Users/max/Work/soju/build/SourcePackages/repositories/SemanticVersion-4d68bae3
+    - path: soju
+      repo: https://github.com/PodoSoju/soju
+
