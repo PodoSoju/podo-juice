@@ -1,6 +1,12 @@
 import Foundation
 import AppKit
 
+// MARK: - Version Check
+if CommandLine.arguments.contains("--version") {
+    print(PodoJuiceVersion.string)
+    exit(0)
+}
+
 // MARK: - Loading Window
 class LoadingWindowController {
     let window: NSWindow
@@ -81,7 +87,7 @@ let app = NSApplication.shared
 app.setActivationPolicy(.regular)
 
 print("[PodoJuice] Starting...")
-print("[PodoJuice] Bundle path: \(Bundle.main.bundlePath)")
+print("[PodoJuice] Bundle: \(Bundle.main.bundlePath)")
 
 // 1. Load configuration
 guard let config = loadConfig() else {
@@ -90,9 +96,9 @@ guard let config = loadConfig() else {
     exit(1)
 }
 
-print("[PodoJuice] Configuration loaded:")
-print("[PodoJuice]   App: \(config.appName)")
-print("[PodoJuice]   Exe: \(config.exePath)")
+print("[PodoJuice] v\(PodoJuiceVersion.full)")
+print("[PodoJuice] App: \(config.appName)")
+print("[PodoJuice] Exe: \(config.exePath)")
 
 // 2. Find PodoSoju installation
 guard let sojuRoot = PodoSojuLocator.find() else {
