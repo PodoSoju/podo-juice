@@ -1,19 +1,19 @@
 Unhandled exception: page fault on read access to 0x00004ecd in wow64 32-bit code (0x7bf11139).
 Register dump:
  CS:0107 SS:0023 DS:0023 ES:0023 FS:0207 GS:0023
- EIP:7bf11139 ESP:136ffd28 EBP:136ffcb4 EFLAGS:00000202(   - --  I   - - - )
- EAX:00000031 EBX:00000065 ECX:00000007 EDX:f3d36000
- ESI:136ffca3 EDI:00000000
+ EIP:7bf11139 ESP:136ffd00 EBP:136ffc74 EFLAGS:00000202(   - --  I   - - - )
+ EAX:00000031 EBX:14a500f8 ECX:00000007 EDX:f3d36075
+ ESI:136ffc63 EDI:00000000
 Stack dump:
-0x136ffd28:  74fd9d8a 750eb9d4 74fc3cb2 750eb9d4
-0x136ffd38:  00000000 75009c26 a9b0cb00 007dca8c
-0x136ffd48:  aa042ea8 007dca8c 00000000 136ffca3
-0x136ffd58:  00000065 15001d00 00000002 14f31c50
-0x136ffd68:  136ffcb4 f3d36000 136ffde4 7587599a
-0x136ffd78:  0ec77640 0f2de658 0ed90bf8 0ec77640
+0x136ffd00:  00000008 00010011 0000003f 136ffd10
+0x136ffd10:  00000000 136ffc63 14a500f8 00000000
+0x136ffd20:  00000000 14a10e30 136ffc74 f3d36075
+0x136ffd30:  136ffda8 758b599a 0e6c6358 14a51bf8
+0x136ffd40:  14f0dc80 0e6c6358 0000006d 77e65ef2
+0x136ffd50:  0f154940 77e65ef2 0e6c6358 14a10b38
 0040: sel=0207 base=135f2000 limit=00000fff 32-bit rw-
 Backtrace:
-=>0 0x7bf11139 (0x136ffcb4)
+=>0 0x7bf11139 (0x136ffc74)
 0x7bf11139: movl 0x4ecd, %edx
 Modules:
 Module  Address                 Debug info      Name (70 modules)
@@ -24,19 +24,19 @@ PE-Wine 74a90000-74ab8000       Deferred        mlang
 PE-Wine 74ad0000-74b94000       Deferred        jscript
 PE-Wine 74bb0000-74bde000       Deferred        msctf
 PE-Wine 74bf0000-74c04000       Deferred        dwmapi
-PE-Wine 74c20000-74c9d000       Deferred        setupapi
-PE      74cb0000-74dc2000       Deferred        lgpllibs
-PE      74de0000-74ecf000       Deferred        mozglue
-PE      74ee0000-7512f000       Deferred        nss3
-PE      75140000-795e1000       Deferred        xul
-PE-Wine 79600000-7961e000       Deferred        secur32
-PE-Wine 79630000-79655000       Deferred        wintrust
-PE-Wine 79670000-79846000       Deferred        mshtml
-PE-Wine 79860000-798b1000       Deferred        rsaenh
-PE-Wine 798d0000-798eb000       Deferred        bcrypt
-PE-Wine 79900000-799cb000       Deferred        crypt32
-PE-Wine 799e0000-799eb000       Deferred        schannel
-PE-Wine 79a00000-79a10000       Deferred        msv1_0
+PE-Wine 74c20000-74c45000       Deferred        wintrust
+PE-Wine 74c60000-74cdd000       Deferred        setupapi
+PE      74cf0000-74e02000       Deferred        lgpllibs
+PE      74e20000-74f0f000       Deferred        mozglue
+PE      74f20000-7516f000       Deferred        nss3
+PE      75180000-79621000       Deferred        xul
+PE-Wine 79640000-79816000       Deferred        mshtml
+PE-Wine 79830000-79881000       Deferred        rsaenh
+PE-Wine 798a0000-798bb000       Deferred        bcrypt
+PE-Wine 798d0000-7999b000       Deferred        crypt32
+PE-Wine 799b0000-799bb000       Deferred        schannel
+PE-Wine 799d0000-799e0000       Deferred        msv1_0
+PE-Wine 799f0000-79a0e000       Deferred        secur32
 PE-Wine 79a20000-79a9c000       Deferred        ieframe
 PE-Wine 79ab0000-79ad9000       Deferred        propsys
 PE-Wine 79af0000-79c40000       Deferred        windowscodecs
@@ -113,8 +113,6 @@ process  tid      prio    name (all IDs are in hex)
 	00000080    0     wine_sechost_service
 	00000084    0     wine_rpcrt4_server
 	000000f0    0     wine_rpcrt4_io
-	00000804    0     wine_rpcrt4_io
-	00000808    0     wine_threadpool_worker
 00000088 NetFileService.exe
 	0000008c    0     
 	000000a0    0     
@@ -138,10 +136,10 @@ process  tid      prio    name (all IDs are in hex)
 	00000114    0     wine_sechost_service
 	00000118    0     wine_rpcrt4_server
 	0000011c    0     wine_rpcrt4_server
-	000004a4    0     wine_rpcrt4_io
-	00000520    0     wine_rpcrt4_io
-0000018c NetFileLuncher.exe
-	00000190    0     
+	0000027c    0     wine_rpcrt4_io
+	000003a8    0     wine_rpcrt4_io
+00000184 NetFileLuncher.exe
+	00000188    0     
 	00000194    1     
 	00000198    0     
 	0000019c    0     
@@ -153,84 +151,76 @@ process  tid      prio    name (all IDs are in hex)
 	000001b4    0     
 	000001b8    0     
 	000001bc    0     
-00000488 (D) C:\Program Files (x86)\NetFile\NetFile.exe
-	0000048c    0     
-	000004ac    0     
-	000004b4    0     wine_threadpool_worker
-	000004c4    0     wine_rpcrt4_server
-	000004fc    0     
-	00000530    0     
-	00000534    0     
+00000268 explorer.exe
+	0000026c    0     
+	00000270    0     
+	00000274    0     wine_explorer_display_settings_restorer
+	00000278    0     wine_rpcrt4_server
+00000814 (D) C:\Program Files (x86)\NetFile\NetFile.exe
+	0000080c    0     
+	00000810    0     
+	00000124    0     wine_threadpool_worker
+	00000528    0     wine_rpcrt4_server
+	0000052c    0     
+	00000308    0     
+	000003b4    0     
+	000003cc    0     
+	000003e4    0     
+	000002a0    0     
+	00000318    0     
+	00000298    0     
+	000003f4    0     
+	00000388    0     
+	000002e0    0     
+	00000328    0     
+	000002d4    0     
+	000001c4    0     
+	000001dc    0     
+	000002c8    0     
+	000002cc    0     
+	000003d0    0     
+	0000031c    0     
+	0000030c    0     
+	00000378   -1     
+	00000350   -1     
+	00000320    0     
+	000003a0    0     
+	000003a4    0 <== 
+	000002e8    0     
+	00000324   -1     
+	000003e0    0     
+	00000374    0     
+	00000340    0     
+	00000380    0     
+	000002b0    0     
+	00000408    0     
+	0000040c    0     
+	00000414    0     
+	00000410    0     
+	0000041c    0     
+	00000418    0     
+	00000420    0     
+	00000424    0     
+	00000428    0     
+	000003bc    0     
+	00000364    0     
+	000002f0    0     
+00000534 NetFileAgent.exe
 	00000538    0     
-	0000053c    0     
-	00000540    0     
 	00000544    0     
 	00000548    0     
 	0000054c    0     
 	00000550    0     
 	00000554    0     
-	00000558    0     
-	0000055c    0     
-	00000560    0     
-	00000564    0     
-	00000568    0     
-	0000056c    0     
 	00000570    0     
-	00000574    0     
-	00000578    0     
-	0000057c   -1     
-	00000580   -1     
-	00000584    0     
-	00000588    0     
-	0000058c    0 <== 
-	00000590    0     
-	00000594   -1     
-	00000598    0     
-	0000059c    0     
-	000005a0    0     
-	000005a4    0     
-	000005a8    0     
-	000005ac    0     
-	000005b0    0     
-	000005b4    0     
-	000005b8    0     
-	000005bc    0     
-	000005c0    0     
-	000005c4    0     
-	000005c8    0     
-	000005cc    0     
-	000007b4    0     
-	000007c0    0     
-	000007e4    0     
-00000490 explorer.exe
-	00000494    0     
-	00000498    0     
-	0000049c    0     wine_explorer_display_settings_restorer
-	000004a0    0     wine_rpcrt4_server
-000004c8 NetFileAgent.exe
-	000004cc    0     
-	000004d8    0     
-	000004dc    0     
-	000004e0    0     
-	000004e4    0     
-	000004e8    0     
-	000004ec    0     
-	000004f0    0     
-	000004f4    0     
-	000004f8    0     
-	00000510    0     
-000004d0 conhost.exe
-	000004d4    0     
-000007cc conhost.exe
-	000007d0    0     
-000007dc SpiderSolitaire.exe
-	000007e0    0     
-	000007e8    0     wined3d_cs
-	000007f0   15     audio_client_timer
-	000007f4   15     wine_dsound_mixer
-	000007f8    0     
-	000007fc    0     wine_xinput_hid_update
-	00000800    0     wine_sechost_device_notify
+	0000056c    0     
+	00000530    0     
+	00000524    0     
+	000002b8    0     
+0000053c conhost.exe
+	00000540    0     
+0000035c conhost.exe
+	000003dc    0     
 System information:
     Wine build: wine-11.0-rc5
     Platform: x86_64 (guest: i386)
