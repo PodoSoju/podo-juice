@@ -209,6 +209,9 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     print("[PodoJuice] Wine window stable for 1.5s, closing loading window")
                     loadingWindow.close()
                     loadingClosed = true
+
+                    // Activate Wine app to bring window to foreground (with retry)
+                    activateWineApp()
                 }
             } else {
                 wineWindowStableCount = 0  // Reset if window disappears
@@ -239,6 +242,33 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             print("[PodoJuice] Wineserver exited, terminating...")
             timer.invalidate()
             NSApp.terminate(nil)
+        }
+    }
+}
+
+// MARK: - Wine Activation Helper
+func activateWineApp(retry: Int = 10) {
+    guard let wineApp = NSWorkspace.shared.runningApplications.first(where: {
+        $0.localizedName?.lowercased().contains("wine") == true
+    }) else {
+        if retry > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                activateWineApp(retry: retry - 1)
+            }
+        } else {
+            print("[PodoJuice] Wine app not found after retries")
+        }
+        return
+    }
+
+    // Activate with all options
+    let success = wineApp.activate(options: [.activateIgnoringOtherApps, .activateAllWindows])
+    print("[PodoJuice] Activated Wine app: \(wineApp.localizedName ?? "unknown"), success: \(success)")
+
+    // Retry if activation failed
+    if !success && retry > 0 {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            activateWineApp(retry: retry - 1)
         }
     }
 }
