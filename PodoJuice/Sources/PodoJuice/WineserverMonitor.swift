@@ -5,7 +5,7 @@ struct WineserverMonitor {
     let winePrefix: String
 
     /// Check if wineserver is running for this prefix
-    func isRunning() -> Bool {
+    public func isRunning() -> Bool {
         // Method 1: Check lock file in /tmp/.wine-{uid}/
         if let uid = getuid() as uid_t? {
             let tmpDir = "/tmp/.wine-\(uid)"

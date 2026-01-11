@@ -21,7 +21,7 @@ print("[PodoJuice]   Target: \(config.targetLnk)")
 print("[PodoJuice]   Exe: \(config.exePath)")
 print("[PodoJuice]   Unix path: \(config.unixExePath)")
 
-// 2. Find Soju installation
+// 2. Find PodoSoju installation
 guard let sojuRoot = PodoSojuLocator.find() else {
     PodoSojuLocator.showNotInstalledAlert()
     exit(1)
@@ -54,9 +54,22 @@ do {
     exit(1)
 }
 
-// 5. Monitor wineserver
-let monitor = WineserverMonitor(winePrefix: config.winePrefix)
-monitor.waitForExit()
+// 5. Monitor wineserver using Timer (non-blocking)
+print("[PodoJuice] Monitoring wineserver...")
 
-print("[PodoJuice] App finished, exiting")
-exit(0)
+let monitor = WineserverMonitor(winePrefix: config.winePrefix)
+
+// Wait a bit for wineserver to start
+DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+    // Start monitoring timer
+    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+        if !monitor.isRunning() {
+            print("[PodoJuice] Wineserver exited, terminating...")
+            timer.invalidate()
+            NSApp.terminate(nil)
+        }
+    }
+}
+
+// Run the app event loop
+app.run()
