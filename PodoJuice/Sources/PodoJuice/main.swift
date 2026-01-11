@@ -148,7 +148,7 @@ do {
 }
 
 // 6. Monitor wineserver for exit detection
-let monitor = WineserverMonitor(winePrefix: config.winePrefix)
+let monitor = WineserverMonitor(winePrefix: config.winePrefix, sojuRoot: sojuRoot)
 var loadingClosed = false
 var wineWindowStableCount = 0
 
@@ -199,9 +199,12 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
 
 // MARK: - Wine Activation Helper
 func activateWineApp(retry: Int = 10) {
-    guard let wineApp = NSWorkspace.shared.runningApplications.first(where: {
+    // Find all Wine apps (may have multiple processes)
+    let wineApps = NSWorkspace.shared.runningApplications.filter {
         $0.localizedName?.lowercased().contains("wine") == true
-    }) else {
+    }
+
+    guard !wineApps.isEmpty else {
         if retry > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 activateWineApp(retry: retry - 1)
@@ -212,14 +215,32 @@ func activateWineApp(retry: Int = 10) {
         return
     }
 
-    // Activate with all options
-    let success = wineApp.activate(options: [.activateIgnoringOtherApps, .activateAllWindows])
-    print("[PodoJuice] Activated Wine app: \(wineApp.localizedName ?? "unknown"), success: \(success)")
+    print("[PodoJuice] Found \(wineApps.count) Wine processes")
 
-    // Retry if activation failed
-    if !success && retry > 0 {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            activateWineApp(retry: retry - 1)
+    // Activate ALL Wine processes (one of them has the window)
+    for wineApp in wineApps {
+        let success = wineApp.activate(options: [.activateIgnoringOtherApps, .activateAllWindows])
+        print("[PodoJuice] Activated: \(wineApp.processIdentifier), success: \(success)")
+    }
+
+    // Also bring Wine windows to front via CGWindowList
+    bringWineWindowsToFront()
+}
+
+/// Bring Wine windows to front using Core Graphics
+func bringWineWindowsToFront() {
+    guard let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
+        return
+    }
+
+    for windowInfo in windowList {
+        if let ownerName = windowInfo[kCGWindowOwnerName as String] as? String,
+           ownerName.lowercased().contains("wine"),
+           let pid = windowInfo[kCGWindowOwnerPID as String] as? Int32 {
+            // Find the NSRunningApplication and activate it
+            if let app = NSRunningApplication(processIdentifier: pid) {
+                app.activate(options: [.activateIgnoringOtherApps, .activateAllWindows])
+            }
         }
     }
 }

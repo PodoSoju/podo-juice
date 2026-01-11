@@ -1,0 +1,240 @@
+Unhandled exception: page fault on read access to 0x00004ecd in wow64 32-bit code (0x7bf11139).
+Register dump:
+ CS:0107 SS:0023 DS:0023 ES:0023 FS:0207 GS:0023
+ EIP:7bf11139 ESP:137ffd18 EBP:137ffca4 EFLAGS:00000202(   - --  I   - - - )
+ EAX:00000031 EBX:00000065 ECX:00000007 EDX:f3d36000
+ ESI:137ffc93 EDI:00000000
+Stack dump:
+0x137ffd18:  75019d8a 7512b9d4 75003cb2 7512b9d4
+0x137ffd28:  00000000 75049c26 c8b6c080 007ffc95
+0x137ffd38:  c92eda98 007ffc95 00000000 137ffc93
+0x137ffd48:  00000065 15766d88 00000002 15a4c100
+0x137ffd58:  137ffca4 f3d36000 137ffdd4 758b599a
+0x137ffd68:  019420b8 14e167b0 154fc2a0 019420b8
+0040: sel=0207 base=136f2000 limit=00000fff 32-bit rw-
+Backtrace:
+=>0 0x7bf11139 (0x137ffca4)
+0x7bf11139: movl 0x4ecd, %edx
+Modules:
+Module  Address                 Debug info      Name (70 modules)
+PE        400000- 1401000       Deferred        netfile
+PE-Wine 10000000-10002000       Deferred        usp10
+PE-Wine 74a70000-74a79000       Deferred        psapi
+PE-Wine 74a90000-74ab8000       Deferred        mlang
+PE-Wine 74ad0000-74b94000       Deferred        jscript
+PE-Wine 74bb0000-74bde000       Deferred        msctf
+PE-Wine 74bf0000-74c04000       Deferred        dwmapi
+PE-Wine 74c20000-74c45000       Deferred        wintrust
+PE-Wine 74c60000-74cdd000       Deferred        setupapi
+PE      74cf0000-74e02000       Deferred        lgpllibs
+PE      74e20000-74f0f000       Deferred        mozglue
+PE      74f20000-7516f000       Deferred        nss3
+PE      75180000-79621000       Deferred        xul
+PE-Wine 79640000-79816000       Deferred        mshtml
+PE-Wine 79830000-79881000       Deferred        rsaenh
+PE-Wine 798a0000-798bb000       Deferred        bcrypt
+PE-Wine 798d0000-7999b000       Deferred        crypt32
+PE-Wine 799b0000-799bb000       Deferred        schannel
+PE-Wine 799d0000-799e0000       Deferred        msv1_0
+PE-Wine 799f0000-79a0e000       Deferred        secur32
+PE-Wine 79a20000-79a9c000       Deferred        ieframe
+PE-Wine 79ab0000-79ad9000       Deferred        propsys
+PE-Wine 79af0000-79c40000       Deferred        windowscodecs
+PE-Wine 79c50000-79cc9000       Deferred        riched20
+PE-Wine 79ce0000-79cea000       Deferred        riched32
+PE-Wine 79d00000-79d0b000       Deferred        winemac
+PE-Wine 79d20000-79d2b000       Deferred        version
+PE-Wine 79d40000-79d4a000       Deferred        netutils
+PE-Wine 79d60000-79d8d000       Deferred        netapi32
+PE-Wine 79da0000-79daf000       Deferred        wsock32
+PE-Wine 79dc0000-79ddc000       Deferred        mpr
+PE-Wine 79df0000-79e78000       Deferred        wininet
+PE-Wine 79e90000-79f0e000       Deferred        urlmon
+PE-Wine 79f20000-79f2d000       Deferred        olepro32
+PE-Wine 79f40000-7a093000       Deferred        comctl32
+PE      7a0b0000-7a317000       Deferred        sqlite3
+PE-Wine 7a330000-7a33b000       Deferred        nsi
+PE-Wine 7a350000-7a36c000       Deferred        dnsapi
+PE-Wine 7a380000-7a3a9000       Deferred        iphlpapi
+PE-Wine 7a3c0000-7a3e6000       Deferred        msacm32
+PE-Wine 7a400000-7a4c7000       Deferred        winmm
+PE-Wine 7a4e0000-7a4fd000       Deferred        imm32
+PE-Wine 7a510000-7a53e000       Deferred        oleacc
+PE-Wine 7a570000-7a583000       Deferred        userenv
+PE-Wine 7a5a0000-7a5c6000       Deferred        ws2_32
+PE-Wine 7a670000-7a76e000       Deferred        comdlg32
+PE-Wine 7a780000-7a7b2000       Deferred        oledlg
+PE-Wine 7a7d0000-7a893000       Deferred        oleaut32
+PE-Wine 7a8b0000-7a8c7000       Deferred        coml2
+PE-Wine 7a8e0000-7a8eb000       Deferred        cryptbase
+PE-Wine 7a900000-7a98b000       Deferred        rpcrt4
+PE-Wine 7a9a0000-7a9ed000       Deferred        combase
+PE-Wine 7aa00000-7aab9000       Deferred        ole32
+PE-Wine 7aad0000-7ab0b000       Deferred        uxtheme
+PE-Wine 7ab20000-7ab37000       Deferred        shcore
+PE-Wine 7ab50000-7aba3000       Deferred        shlwapi
+PE-Wine 7abc0000-7b4f1000       Deferred        shell32
+PE-Wine 7b640000-7b656000       Deferred        compstui
+PE-Wine 7b670000-7b6a0000       Deferred        winspool
+PE-Wine 7b6b0000-7b6b9000       Deferred        msimg32
+PE-Wine 7b6d0000-7b704000       Deferred        win32u
+PE-Wine 7b720000-7b7a8000       Deferred        gdi32
+PE      7b7c0000-7b8a1000       Deferred        ucrtbase
+PE-Wine 7b8c0000-7b8dd000       Deferred        sechost
+PE-Wine 7b8f0000-7b99e000       Deferred        msvcrt
+PE-Wine 7b9b0000-7b9eb000       Deferred        advapi32
+PE-Wine 7ba00000-7bbc9000       Deferred        user32
+PE-Wine 7bbe0000-7be7e000       Deferred        kernelbase
+PE-Wine 7be90000-7befa000       Deferred        kernel32
+PE-Wine 7bf30000-7bfe7000       Deferred        ntdll
+Threads:
+process  tid      prio    name (all IDs are in hex)
+00000038 services.exe
+	0000003c    0     
+	00000040    0     wine_rpcrt4_server
+	0000004c    0     wine_rpcrt4_io
+	00000070    0     wine_rpcrt4_io
+	0000008c    0     wine_rpcrt4_io
+	000000a0    0     wine_rpcrt4_io
+	000000b8    0     wine_rpcrt4_io
+	000000e4    0     
+	0000010c    0     wine_rpcrt4_io
+	00000118    0     wine_rpcrt4_io
+00000044 winedevice.exe
+	00000048    0     
+	00000054    0     
+	00000058    0     wine_sechost_service
+	0000005c    0     
+	00000060    0     
+	00000064    0     
+	000000ac    0     wine_nsi_notification
+00000068 plugplay.exe
+	0000006c    0     
+	00000074    0     
+	00000078    0     wine_sechost_service
+	0000007c    0     wine_rpcrt4_server
+	000000d4    0     wine_rpcrt4_io
+00000080 NetFileService.exe
+	00000084    0     
+	00000088    0     
+	00000090    0     
+00000098 svchost.exe
+	0000009c    0     
+	000000a4    0     
+	000000a8    0     wine_sechost_service
+000000b0 winedevice.exe
+	000000b4    0     
+	000000bc    0     
+	000000c0    0     wine_sechost_service
+	000000c4    0     
+	000000c8    0     
+	000000cc    0     
+	000000d0    0     
+	000000e0    0     
+000000f0 (D) C:\Program Files (x86)\NetFile\NetFile.exe
+	000000f4    0     
+	00000138    0     
+	00000140    0     wine_threadpool_worker
+	00000150    0     wine_rpcrt4_server
+	00000188    0     
+	000001b8    0     
+	000001bc    0     
+	000001c0    0     
+	000001c4    0     
+	000001c8    0     
+	000001cc    0     
+	000001d0    0     
+	000001d4    0     
+	000001d8    0     
+	000001dc    0     
+	000001e0    0     
+	000001e4    0     
+	000001e8    0     
+	000001ec    0     
+	000001f0    0     
+	000001f4    0     
+	000001f8    0     
+	000001fc    0     
+	00000200    0     
+	00000204   -1     
+	00000208   -1     
+	0000020c    0     
+	00000210    0     
+	00000214    0 <== 
+	00000218    0     
+	0000021c   -1     
+	00000220    0     
+	00000224    0     
+	00000228    0     
+	0000022c    0     
+	00000230    0     
+	00000234    0     
+	00000238    0     
+	0000023c    0     
+	00000240    0     
+	00000244    0     
+	00000248    0     
+	0000024c    0     
+	00000250    0     
+	00000254    0     
+	00000474    0     
+	00000478    0     
+	0000047c    0     
+	00000480    0     
+	00000484    0     
+	00000488    0     
+	000004a0    0     
+	000004ac    0     
+	000004b8    0     
+	000004c4    0     
+000000f8 explorer.exe
+	000000fc    0     
+	00000100    0     
+	00000104    0     wine_explorer_display_settings_restorer
+	00000108    0     wine_rpcrt4_server
+00000110 rpcss.exe
+	00000114    0     
+	00000120    0     
+	00000124    0     wine_sechost_service
+	00000128    0     wine_rpcrt4_server
+	0000012c    0     wine_rpcrt4_server
+	00000130    0     wine_rpcrt4_io
+	000001ac    0     wine_rpcrt4_io
+00000154 NetFileAgent.exe
+	00000158    0     
+	00000164    0     
+	00000168    0     
+	0000016c    0     
+	00000170    0     
+	00000174    0     
+	00000178    0     
+	0000017c    0     
+	00000180    0     
+	00000184    0     
+	0000019c    0     
+	00000468    0     
+	0000046c    0     
+	0000048c    0     
+0000015c conhost.exe
+	00000160    0     
+00000434 NetFileLuncher.exe
+	00000438    0     
+	0000043c    1     
+	00000440    0     
+	00000444    0     
+	00000448    0     
+	0000044c    0     
+	00000450    0     
+	00000454    0     
+	00000458    0     
+	0000045c    0     
+	00000460    0     
+	00000464    0     
+000004bc conhost.exe
+	000004c0    0     
+System information:
+    Wine build: wine-11.0-rc5
+    Platform: x86_64 (guest: i386)
+    Version: Windows 10
+    Host system: Darwin
+    Host version: 25.0.0

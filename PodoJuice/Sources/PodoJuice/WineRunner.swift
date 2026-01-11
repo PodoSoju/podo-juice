@@ -63,8 +63,24 @@ class WineRunner {
         return env
     }
 
+    /// Write hide dock setting to WINEPREFIX for all Wine processes to read
+    private func writeHideDockSetting() {
+        let sojuDir = URL(fileURLWithPath: config.winePrefix).appendingPathComponent(".soju")
+        let hideDockFile = sojuDir.appendingPathComponent("hide_dock")
+
+        // Create .soju directory if needed
+        try? FileManager.default.createDirectory(at: sojuDir, withIntermediateDirectories: true)
+
+        // Write hide_dock mode (2 = TransformProcessType before NSApp)
+        try? "2".write(to: hideDockFile, atomically: true, encoding: .utf8)
+        print("[PodoJuice] Wrote hide_dock setting to \(hideDockFile.path)")
+    }
+
     /// Run Wine with the configured exe
     func run() throws {
+        // Write hide dock setting for all Wine processes
+        writeHideDockSetting()
+
         let process = Process()
         process.executableURL = URL(fileURLWithPath: winePath)
         process.arguments = ["start", "/unix", config.unixExePath]
