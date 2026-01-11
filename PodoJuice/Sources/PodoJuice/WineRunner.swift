@@ -1,9 +1,20 @@
 import Foundation
 
-/// Manages Wine process execution
-struct WineRunner {
+/// Manages Wine process execution with process group tracking
+class WineRunner {
     let sojuRoot: String
     let config: JuiceConfig
+
+    /// The Wine process (kept for termination)
+    private(set) var wineProcess: Process?
+
+    /// Shared instance for termination handling
+    static var shared: WineRunner?
+
+    init(sojuRoot: String, config: JuiceConfig) {
+        self.sojuRoot = sojuRoot
+        self.config = config
+    }
 
     /// Wine executable path (prefers wine, falls back to wine64)
     var winePath: String {
@@ -28,6 +39,7 @@ struct WineRunner {
         env["SOJU_APP_NAME"] = config.appName
         env["SOJU_APP_PATH"] = config.unixExePath
         env["SOJU_WORKSPACE_ID"] = config.workspaceId
+        env["SOJU_HIDE_DOCK"] = "1"  // Hide Wine from Dock - PodoJuice shows instead
 
         // Library paths for bundled dylibs
         let libPath = "\(sojuRoot)/lib"
@@ -64,6 +76,37 @@ struct WineRunner {
 
         try process.run()
 
+        wineProcess = process
+        WineRunner.shared = self
+
         print("[PodoJuice] Wine process started (PID: \(process.processIdentifier))")
+    }
+
+    /// Terminate all Wine processes for this prefix
+    func terminate() {
+        print("[PodoJuice] Terminating Wine processes for prefix: \(config.winePrefix)")
+
+        // 1. Kill by WINEPREFIX pattern
+        let pkillTask = Process()
+        pkillTask.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
+        pkillTask.arguments = ["-9", "-f", config.winePrefix]
+        try? pkillTask.run()
+        pkillTask.waitUntilExit()
+
+        // 2. Use wineserver -k
+        let wineserverPath = "\(sojuRoot)/bin/wineserver"
+        let wineserverTask = Process()
+        wineserverTask.executableURL = URL(fileURLWithPath: wineserverPath)
+        wineserverTask.arguments = ["-k"]
+        wineserverTask.environment = ["WINEPREFIX": config.winePrefix]
+        try? wineserverTask.run()
+        wineserverTask.waitUntilExit()
+
+        // 3. Terminate direct child if still running
+        if let process = wineProcess, process.isRunning {
+            process.terminate()
+        }
+
+        print("[PodoJuice] Wine processes terminated")
     }
 }
