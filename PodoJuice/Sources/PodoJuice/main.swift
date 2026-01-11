@@ -141,6 +141,7 @@ let runningDir = URL(fileURLWithPath: config.winePrefix).appendingPathComponent(
 var loadingClosed = false
 var wineWindowWasOpened = false  // Track if Wine window was ever opened
 var wineWindowStableCount = 0  // Require window to be stable for multiple checks
+var wineWindowGoneCount = 0  // Track consecutive checks where window is gone
 
 print("[PodoJuice] Watching for Wine window in: \(runningDir.path)")
 
@@ -172,28 +173,29 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             wineWindowWasOpened = true
         }
 
-        // Check if actual Wine window is fully visible on screen
-        if !loadingClosed {
-            let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        // Check if actual Wine window is fully visible on screen (always check, not just during loading)
+        let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 
-            var foundVisibleWindow = false
-            for windowInfo in windowList {
-                if let ownerName = windowInfo[kCGWindowOwnerName as String] as? String,
-                   ownerName.lowercased().contains("wine") {
-                    // Check if window has actual size and is fully opaque
-                    if let bounds = windowInfo[kCGWindowBounds as String] as? [String: CGFloat],
-                       let width = bounds["Width"], let height = bounds["Height"],
-                       width > 100 && height > 100 {
-                        // Check alpha (1.0 = fully visible)
-                        let alpha = windowInfo[kCGWindowAlpha as String] as? CGFloat ?? 0
-                        if alpha >= 1.0 {
-                            foundVisibleWindow = true
-                            break
-                        }
+        var foundVisibleWindow = false
+        for windowInfo in windowList {
+            if let ownerName = windowInfo[kCGWindowOwnerName as String] as? String,
+               ownerName.lowercased().contains("wine") {
+                // Check if window has actual size and is fully opaque
+                if let bounds = windowInfo[kCGWindowBounds as String] as? [String: CGFloat],
+                   let width = bounds["Width"], let height = bounds["Height"],
+                   width > 100 && height > 100 {
+                    // Check alpha (1.0 = fully visible)
+                    let alpha = windowInfo[kCGWindowAlpha as String] as? CGFloat ?? 0
+                    if alpha >= 1.0 {
+                        foundVisibleWindow = true
+                        break
                     }
                 }
             }
+        }
 
+        // Loading window handling
+        if !loadingClosed {
             if foundVisibleWindow {
                 wineWindowStableCount += 1
                 // Require 5 consecutive detections (0.3s * 5 = 1.5s of stable window)
@@ -208,10 +210,23 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
         }
 
         // Exit conditions:
-        // 1. Wine window was opened and now closed (my running file removed)
-        // 2. Wineserver has exited (fallback)
+        // 1. Wine window was fully visible then disappeared (CGWindowList check)
+        // 2. Running JSON file removed (soju patch signal)
+        // 3. Wineserver exited (fallback)
+        if loadingClosed && !foundVisibleWindow {
+            // Loading closed means window was shown, now check if it's gone
+            wineWindowGoneCount += 1
+            if wineWindowGoneCount >= 3 {  // Gone for 0.9s
+                print("[PodoJuice] Wine window closed, terminating...")
+                timer.invalidate()
+                NSApp.terminate(nil)
+            }
+        } else {
+            wineWindowGoneCount = 0
+        }
+
         if wineWindowWasOpened && !hasMyRunningFile {
-            print("[PodoJuice] Wine window closed (my running file removed), terminating...")
+            print("[PodoJuice] Wine running file removed, terminating...")
             timer.invalidate()
             NSApp.terminate(nil)
         } else if !monitor.isRunning() {
